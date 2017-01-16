@@ -1,4 +1,3 @@
-# change
 # docker build --rm -t drone/drone .
 
 FROM centurylink/ca-certs
