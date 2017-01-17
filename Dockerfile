@@ -3,11 +3,8 @@
 FROM centurylink/ca-certs
 EXPOSE 8000
 
-ENV DATABASE_DRIVER=sqlite3
-ENV DATABASE_CONFIG=/var/lib/drone/drone.sqlite
-ENV GODEBUG=netdns=go
-
-ADD release/drone /drone
+#we do our release of the linux version
+ADD release/linux/amd64/drone /drone
 
 ENTRYPOINT ["/drone"]
 CMD ["server"]
