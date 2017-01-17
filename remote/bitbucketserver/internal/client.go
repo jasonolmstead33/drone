@@ -14,11 +14,12 @@ import (
 	"github.com/mrjones/oauth"
 )
 
+//TODO made a change to pathRepos to only get repos for the DWPER project, need to do it for all projects, maybe added scope env?
 const (
 	currentUserId   = "%s/plugins/servlet/applinks/whoami"
 	pathUser        = "%s/rest/api/1.0/users/%s"
 	pathRepo        = "%s/rest/api/1.0/projects/%s/repos/%s"
-	pathRepos       = "%s/rest/api/1.0/repos?start=%s&limit=%s"
+	pathRepos       = "%s/rest/api/1.0/projects/DWPER/repos?start=%s&limit=%s"
 	pathHook        = "%s/rest/api/1.0/projects/%s/repos/%s/settings/hooks/%s"
 	pathSource      = "%s/projects/%s/repos/%s/browse/%s?at=%s&raw"
 	hookName        = "com.atlassian.stash.plugin.stash-web-post-receive-hooks-plugin:postReceiveHook"
