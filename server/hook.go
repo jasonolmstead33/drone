@@ -96,6 +96,9 @@ func PostHook(c *gin.Context) {
 		return
 	}
 
+	log.Print(user.String())
+	build.Avatar = user.Avatar
+
 	// if there is no email address associated with the pull request,
 	// we lookup the email address based on the authors github login.
 	//

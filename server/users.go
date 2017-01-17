@@ -43,6 +43,9 @@ func PatchUser(c *gin.Context) {
 		return
 	}
 	user.Active = in.Active
+	if in.Avatar != "" {
+		user.Avatar = in.Avatar
+	}
 
 	err = store.UpdateUser(c, user)
 	if err != nil {

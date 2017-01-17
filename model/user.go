@@ -1,5 +1,7 @@
 package model
 
+import "fmt"
+
 // User represents a registered user.
 //
 // swagger:model user
@@ -45,4 +47,8 @@ type User struct {
 
 	// DEPRECATED Admin indicates the user is a system administrator.
 	XAdmin bool `json:"-" meddler:"user_admin"`
+}
+
+func (u User) String() string {
+	return fmt.Sprintf("{ID : %d, Login : %s, Email : %s, Avatar : %s}", u.ID, u.Login, u.Email, u.Avatar)
 }
