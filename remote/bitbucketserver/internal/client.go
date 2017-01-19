@@ -14,17 +14,17 @@ import (
 	"github.com/mrjones/oauth"
 )
 
-//TODO made a change to pathRepos to only get repos for the DWPER project, need to do it for all projects, maybe added scope env?
 const (
-	currentUserId   = "%s/plugins/servlet/applinks/whoami"
-	pathUser        = "%s/rest/api/1.0/users/%s"
-	pathRepo        = "%s/rest/api/1.0/projects/%s/repos/%s"
-	pathRepos       = "%s/rest/api/1.0/projects/DWPER/repos?start=%s&limit=%s"
-	pathHook        = "%s/rest/api/1.0/projects/%s/repos/%s/settings/hooks/%s"
-	pathSource      = "%s/projects/%s/repos/%s/browse/%s?at=%s&raw"
-	hookName        = "com.atlassian.stash.plugin.stash-web-post-receive-hooks-plugin:postReceiveHook"
-	pathHookEnabled = "%s/rest/api/1.0/projects/%s/repos/%s/settings/hooks/%s/enabled"
-	pathStatus      = "%s/rest/build-status/1.0/commits/%s"
+	currentUserId    = "%s/plugins/servlet/applinks/whoami"
+	pathUser         = "%s/rest/api/1.0/users/%s"
+	pathRepo         = "%s/rest/api/1.0/projects/%s/repos/%s"
+	pathRepos        = "%s/rest/api/1.0/repos?start=%s&limit=%s"
+	projectPathRepos = "%s/rest/api/1.0/projects/%s/repos?start=%s&limit=%s"
+	pathHook         = "%s/rest/api/1.0/projects/%s/repos/%s/settings/hooks/%s"
+	pathSource       = "%s/projects/%s/repos/%s/browse/%s?at=%s&raw"
+	hookName         = "com.atlassian.stash.plugin.stash-web-post-receive-hooks-plugin:postReceiveHook"
+	pathHookEnabled  = "%s/rest/api/1.0/projects/%s/repos/%s/settings/hooks/%s/enabled"
+	pathStatus       = "%s/rest/build-status/1.0/commits/%s"
 )
 
 type Client struct {
@@ -92,8 +92,21 @@ func (c *Client) FindRepo(owner string, name string) (*Repo, error) {
 	return &repo, nil
 }
 
-func (c *Client) FindRepos() ([]*Repo, error) {
-	return c.paginatedRepos(0)
+//FindRepos returns all projects for server or limited to projects scopes
+func (c *Client) FindRepos(projects []string) ([]*Repo, error) {
+	if len(projects) == 0 {
+		return c.paginatedRepos(0)
+	}
+
+	repos := Repos{}
+	for _, p := range projects {
+		result, err := c.paginatedReposForProject(p, 0)
+		if err != nil {
+			return nil, err
+		}
+		repos.Values = append(repos.Values, result...)
+	}
+	return repos.Values, nil
 }
 
 func (c *Client) FindRepoPerms(owner string, repo string) (*model.Perm, error) {
@@ -190,6 +203,30 @@ func (c *Client) doDelete(url string) error {
 	}
 	defer response.Body.Close()
 	return nil
+}
+
+//Helper function to get repos for a project
+func (c *Client) paginatedReposForProject(project string, start int) ([]*Repo, error) {
+	limit := 1000
+	requestUrl := fmt.Sprintf(projectPathRepos, c.base, project, strconv.Itoa(start), strconv.Itoa(limit))
+	response, err := c.client.Get(requestUrl)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	var repoResponse Repos
+	err = json.NewDecoder(response.Body).Decode(&repoResponse)
+	if err != nil {
+		return nil, err
+	}
+	if !repoResponse.IsLastPage {
+		reposList, err := c.paginatedReposForProject(project, start+limit)
+		if err != nil {
+			return nil, err
+		}
+		repoResponse.Values = append(repoResponse.Values, reposList...)
+	}
+	return repoResponse.Values, nil
 }
 
 //Helper function to get repos paginated

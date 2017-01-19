@@ -105,7 +105,6 @@ func Load(middleware ...gin.HandlerFunc) http.Handler {
 
 			// requires push permissions
 			repo.PATCH("", session.MustPush, server.PatchRepo)
-			repo.PUT("", session.MustPush, server.PatchRepo)
 			repo.DELETE("", session.MustRepoAdmin(), server.DeleteRepo)
 			repo.POST("/chown", session.MustRepoAdmin(), server.ChownRepo)
 

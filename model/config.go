@@ -15,6 +15,11 @@ func (c *Config) IsAdmin(user *User) bool {
 	return c.Admins[user.Login]
 }
 
+// GetProjects gets the list of projects to pull repos for.
+// func (c *Config) GetProjects() []string {
+// 	return c.ProjectScope
+// }
+
 // IsMember returns true if the user is a member of the whitelisted teams.
 func (c *Config) IsMember(teams []*Team) bool {
 	for _, team := range teams {

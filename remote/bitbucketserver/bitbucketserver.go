@@ -9,14 +9,15 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/drone/drone/model"
-	"github.com/drone/drone/remote"
-	"github.com/drone/drone/remote/bitbucketserver/internal"
-	"github.com/mrjones/oauth"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/drone/drone/model"
+	"github.com/drone/drone/remote"
+	"github.com/drone/drone/remote/bitbucketserver/internal"
+	"github.com/mrjones/oauth"
 )
 
 const (
@@ -27,12 +28,13 @@ const (
 
 // Opts defines configuration options.
 type Opts struct {
-	URL         string // Stash server url.
-	Username    string // Git machine account username.
-	Password    string // Git machine account password.
-	ConsumerKey string // Oauth1 consumer key.
-	ConsumerRSA string // Oauth1 consumer key file.
-	SkipVerify  bool   // Skip ssl verification.
+	URL         string   // Stash server url.
+	Username    string   // Git machine account username.
+	Password    string   // Git machine account password.
+	ConsumerKey string   // Oauth1 consumer key.
+	ConsumerRSA string   // Oauth1 consumer key file.
+	SkipVerify  bool     // Skip ssl verification.
+	Projects    []string //projects to scope for
 }
 
 type Config struct {
@@ -41,6 +43,7 @@ type Config struct {
 	Password   string
 	SkipVerify bool
 	Consumer   *oauth.Consumer
+	Projects   []string
 }
 
 // New returns a Remote implementation that integrates with Bitbucket Server,
@@ -51,6 +54,7 @@ func New(opts Opts) (remote.Remote, error) {
 		Username:   opts.Username,
 		Password:   opts.Password,
 		SkipVerify: opts.SkipVerify,
+		Projects:   opts.Projects,
 	}
 
 	switch {
@@ -129,7 +133,7 @@ func (c *Config) Repo(u *model.User, owner, name string) (*model.Repo, error) {
 }
 
 func (c *Config) Repos(u *model.User) ([]*model.RepoLite, error) {
-	repos, err := internal.NewClientWithToken(c.URL, c.Consumer, u.Token).FindRepos()
+	repos, err := internal.NewClientWithToken(c.URL, c.Consumer, u.Token).FindRepos(c.Projects)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +158,7 @@ func (c *Config) File(u *model.User, r *model.Repo, b *model.Build, f string) ([
 }
 
 // Status is not supported by the bitbucketserver driver.
-func (c *Config) Status(u *model.User,r *model.Repo,b *model.Build,link string) error {
+func (c *Config) Status(u *model.User, r *model.Repo, b *model.Build, link string) error {
 	status := internal.BuildStatus{
 		State: convertStatus(b.Status),
 		Desc:  convertDesc(b.Status),

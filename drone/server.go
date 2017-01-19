@@ -276,6 +276,11 @@ var serverCmd = cli.Command{
 			Name:   "stash-skip-verify",
 			Usage:  "stash skip ssl verification",
 		},
+		cli.StringSliceFlag{
+			EnvVar: "DRONE_STASH_PROJECTS",
+			Name:   "projects",
+			Usage:  "list of projects to scope to",
+		},
 	},
 }
 
