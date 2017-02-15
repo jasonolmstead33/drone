@@ -11,7 +11,7 @@ import (
 	"github.com/drone/drone/server"
 	"github.com/drone/drone/server/template"
 
-	"github.com/drone/drone-ui/dist"
+	"github.com/jasonolmstead33/drone-ui/dist"
 )
 
 // Load loads the router
