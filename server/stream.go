@@ -9,7 +9,7 @@ import (
 	"github.com/drone/drone/model"
 	"github.com/drone/drone/router/middleware/session"
 	"github.com/drone/drone/store"
-	"github.com/drone/mq/stomp"
+	"github.com/jasonolmstead33/mq/stomp"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"

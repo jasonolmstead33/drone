@@ -13,8 +13,8 @@ import (
 	"github.com/drone/drone/model"
 	"github.com/drone/drone/remote"
 	"github.com/drone/drone/store"
-	"github.com/drone/mq/stomp"
 	"github.com/gorilla/websocket"
+	"github.com/jasonolmstead33/mq/stomp"
 )
 
 // newline defines a newline constant to separate lines in the build output

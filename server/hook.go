@@ -15,7 +15,7 @@ import (
 	"github.com/drone/drone/shared/token"
 	"github.com/drone/drone/store"
 	"github.com/drone/drone/yaml"
-	"github.com/drone/mq/stomp"
+	"github.com/jasonolmstead33/mq/stomp"
 )
 
 var skipRe = regexp.MustCompile(`\[(?i:ci *skip|skip *ci)\]`)

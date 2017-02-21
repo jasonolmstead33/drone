@@ -6,8 +6,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/drone/drone/build"
 	"github.com/drone/drone/model"
-	"github.com/drone/mq/logger"
-	"github.com/drone/mq/stomp"
+	"github.com/jasonolmstead33/mq/logger"
+	"github.com/jasonolmstead33/mq/stomp"
 )
 
 // UpdateFunc handles buid pipeline status updates.

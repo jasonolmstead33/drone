@@ -7,7 +7,7 @@ import (
 	"github.com/drone/drone/agent"
 	"github.com/drone/drone/build/docker"
 	"github.com/drone/drone/model"
-	"github.com/drone/mq/stomp"
+	"github.com/jasonolmstead33/mq/stomp"
 
 	"github.com/samalba/dockerclient"
 )
