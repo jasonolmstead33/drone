@@ -60,6 +60,12 @@ var AgentCmd = cli.Command{
 			Value:  "amd64",
 		},
 		cli.StringFlag{
+			EnvVar: "DRONE_TOPIC",
+			Name:   "drone-topic",
+			Usage:  "topic to listen to drone for",
+			Value:  "/queue/pending",
+		},
+		cli.StringFlag{
 			EnvVar: "DRONE_SERVER",
 			Name:   "drone-server",
 			Usage:  "drone server address",
@@ -239,8 +245,16 @@ func start(c *cli.Context) {
 			opts = append(opts, stomp.WithSelector(filter))
 		}
 
+		//This allows an agent to listen to a specific queue.
+		topic := c.String("drone-topic")
+		if topic == "" {
+			topic = "/queue/pending"
+		}
+
+		logger.Noticef("topic set to: %v", topic)
+
 		// subscribe to the pending build queue.
-		client.Subscribe("/queue/pending", stomp.HandlerFunc(func(m *stomp.Message) {
+		client.Subscribe(topic, stomp.HandlerFunc(func(m *stomp.Message) {
 			go handler(m) // HACK until we a channel based Subscribe implementation
 		}), opts...)
 

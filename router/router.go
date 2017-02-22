@@ -121,6 +121,7 @@ func Load(middleware ...gin.HandlerFunc) http.Handler {
 
 	e.POST("/hook", server.PostHook)
 	e.POST("/api/hook", server.PostHook)
+	// e.POST("/api/hook/test", server.TestPostHook)
 
 	ws := e.Group("/ws")
 	{

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/square/go-jose"
@@ -19,6 +20,12 @@ import (
 )
 
 var skipRe = regexp.MustCompile(`\[(?i:ci *skip|skip *ci)\]`)
+
+//TestPostHook to be removed
+// func TestPostHook(c *gin.Context) {
+// 	PostHook(c)
+// 	return
+// }
 
 func PostHook(c *gin.Context) {
 	remote_ := remote.FromContext(c)
@@ -96,7 +103,6 @@ func PostHook(c *gin.Context) {
 		return
 	}
 
-	log.Print(user.String())
 	build.Avatar = user.Avatar
 
 	// if there is no email address associated with the pull request,
@@ -139,6 +145,7 @@ func PostHook(c *gin.Context) {
 	}
 
 	axes, err := yaml.ParseMatrix(raw)
+
 	if err != nil {
 		c.String(500, "Failed to parse yaml file or calculate matrix. %s", err)
 		return
@@ -226,7 +233,7 @@ func PostHook(c *gin.Context) {
 
 	for _, job := range jobs {
 		broker, _ := stomp.FromContext(c)
-		broker.SendJSON("/queue/pending", &model.Work{
+		work := &model.Work{
 			Signed:    build.Signed,
 			Verified:  build.Verified,
 			User:      user,
@@ -238,7 +245,12 @@ func PostHook(c *gin.Context) {
 			Yaml:      string(raw),
 			Secrets:   secs,
 			System:    &model.System{Link: httputil.GetURL(c.Request)},
-		},
+		}
+
+		aq := getQueueString(raw)
+
+		broker.SendJSON(aq,
+			work,
 			stomp.WithHeader(
 				"platform",
 				yaml.ParsePlatformDefault(raw, "linux/amd64"),
@@ -249,4 +261,27 @@ func PostHook(c *gin.Context) {
 		)
 	}
 
+}
+
+//This is a hacky way to get the queue name
+//Id like to unmarshal the string (or []byte) into an object
+//but for now this works
+func getQueueString(raw []byte) string {
+	arr := strings.Split(string(raw), "\n")
+	aq := "/queue/pending"
+	str := ""
+	for key := range arr {
+		s := arr[key]
+		if strings.Contains(s, "agent_queue=") {
+			str = arr[key]
+			break
+		}
+	}
+	if str != "" {
+		str = strings.Trim(str, " \n")
+		sub := strings.SplitAfter(str, "=")
+		aq = sub[1]
+	}
+	log.Debugf("Sending message on queue, %v", aq)
+	return aq
 }
