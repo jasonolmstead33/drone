@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/square/go-jose"
@@ -21,7 +20,7 @@ import (
 
 var skipRe = regexp.MustCompile(`\[(?i:ci *skip|skip *ci)\]`)
 
-//TestPostHook to be removed
+// TestPostHook to be removed
 // func TestPostHook(c *gin.Context) {
 // 	PostHook(c)
 // 	return
@@ -247,7 +246,7 @@ func PostHook(c *gin.Context) {
 			System:    &model.System{Link: httputil.GetURL(c.Request)},
 		}
 
-		aq := getQueueString(raw)
+		aq := getQueueString(raw, build.Event)
 
 		broker.SendJSON(aq,
 			work,
@@ -266,22 +265,31 @@ func PostHook(c *gin.Context) {
 //This is a hacky way to get the queue name
 //Id like to unmarshal the string (or []byte) into an object
 //but for now this works
-func getQueueString(raw []byte) string {
-	arr := strings.Split(string(raw), "\n")
+func getQueueString(raw []byte, event string) string {
 	aq := "/queue/pending"
-	str := ""
-	for key := range arr {
-		s := arr[key]
-		if strings.Contains(s, "agent_queue=") {
-			str = arr[key]
-			break
+	spec, err := yaml.Parse(raw)
+	if err != nil {
+		log.Errorf("Error in parsing yaml\n%v", err)
+	}
+
+	var containers []*yaml.Container
+	//map the Pipelines to containers..
+	containers = append(containers, spec.Pipeline...)
+
+	for _, val := range containers {
+		//TODO this could be broader in checking excludes, branches, etc...
+		//but this should work for now
+		if val.Constraints.Event.Includes(event) && !val.Constraints.Event.Excludes(event) {
+			for key, val := range val.Environment {
+				if key == "agent_queue" {
+					aq = val
+					break
+				}
+			}
 		}
 	}
-	if str != "" {
-		str = strings.Trim(str, " \n")
-		sub := strings.SplitAfter(str, "=")
-		aq = sub[1]
-	}
+
+	log.Debugf("Event Type => %v", event)
 	log.Debugf("Sending message on queue, %v", aq)
 	return aq
 }
