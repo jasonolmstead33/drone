@@ -247,6 +247,8 @@ func PostHook(c *gin.Context) {
 		}
 
 		aq := getQueueString(raw, build.Event)
+		log.Errorln("Event Type => %v", build.Event)
+		log.Errorln("Sending message on queue, %v", aq)
 
 		broker.SendJSON(aq,
 			work,
@@ -289,7 +291,5 @@ func getQueueString(raw []byte, event string) string {
 		}
 	}
 
-	log.Warnf("Event Type => %v", event)
-	log.Warnf("Sending message on queue, %v", aq)
 	return aq
 }

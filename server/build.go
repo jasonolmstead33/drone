@@ -339,7 +339,7 @@ func PostBuild(c *gin.Context) {
 
 	for _, job := range jobs {
 		broker, _ := stomp.FromContext(c)
-		broker.SendJSON("/queue/pending", &model.Work{
+		work := &model.Work{
 			Signed:    signed,
 			Verified:  verified,
 			User:      user,
@@ -351,7 +351,14 @@ func PostBuild(c *gin.Context) {
 			Yaml:      string(raw),
 			Secrets:   secs,
 			System:    &model.System{Link: httputil.GetURL(c.Request)},
-		},
+		}
+
+		aq := getQueueStringForEvent(raw, build.Event)
+
+		log.Errorln("Event Type => %v", build.Event)
+		log.Errorln("Sending message on queue, %v", aq)
+
+		broker.SendJSON(aq, work,
 			stomp.WithHeader(
 				"platform",
 				yaml.ParsePlatformDefault(raw, "linux/amd64"),
@@ -361,6 +368,36 @@ func PostBuild(c *gin.Context) {
 			),
 		)
 	}
+}
+
+//This is a hacky way to get the queue name
+//Id like to unmarshal the string (or []byte) into an object
+//but for now this works
+func getQueueStringForEvent(raw []byte, event string) string {
+	aq := "/queue/pending"
+	spec, err := yaml.Parse(raw)
+	if err != nil {
+		log.Errorf("Error in parsing yaml\n%v", err)
+	}
+
+	var containers []*yaml.Container
+	//map the Pipelines to containers..
+	containers = append(containers, spec.Pipeline...)
+
+	for _, val := range containers {
+		//TODO this could be broader in checking excludes, branches, etc...
+		//but this should work for now
+		if val.Constraints.Event.Includes(event) {
+			for key, val := range val.Environment {
+				if key == "agent_queue" {
+					aq = val
+					break
+				}
+			}
+		}
+	}
+
+	return aq
 }
 
 func GetBuildQueue(c *gin.Context) {
