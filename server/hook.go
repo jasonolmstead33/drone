@@ -281,7 +281,7 @@ func getQueueString(raw []byte, event string) string {
 	for _, val := range containers {
 		//TODO this could be broader in checking excludes, branches, etc...
 		//but this should work for now
-		if val.Constraints.Event.Match(event) {
+		if val.Constraints.Event.Includes(event) {
 			for key, val := range val.Environment {
 				if key == "agent_queue" {
 					aq = val
