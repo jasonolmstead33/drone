@@ -37,6 +37,24 @@ func GetFeed(c *gin.Context) {
 	c.JSON(200, feed)
 }
 
+func GetBuildFeed(c *gin.Context) {
+	email := c.Query("user_email")
+	//Maybe need to change 64 to 32?
+
+	since, _ := strconv.ParseInt(c.Query("since"), 0, 64)
+
+	log.Println(email)
+	log.Println(since)
+
+	builds, err := store.GetUserBuilds(c, email, since)
+	if err != nil {
+		c.String(500, "Error fetching user builds. %s", err)
+		return
+	}
+
+	c.JSON(200, builds)
+}
+
 func GetRepos(c *gin.Context) {
 	var (
 		user     = session.User(c)

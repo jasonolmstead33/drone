@@ -45,6 +45,33 @@ func (db *datastore) GetUserFeed(listof []*model.RepoLite) ([]*model.Feed, error
 	return feed, err
 }
 
+func (db *datastore) GetUserBuilds(email string, since int64) ([]*model.Feed, error) {
+	var (
+		args []interface{}
+		stmt string
+		err  error
+		feed = []*model.Feed{}
+	)
+
+	if email == "" {
+		stmt = ""
+	} else {
+		switch meddler.Default {
+		case meddler.PostgreSQL:
+			stmt = fmt.Sprintf("AND b.build_email IN ('%s')", email)
+		default:
+			//TODO If not posgres, need to format IN statment string
+			stmt = ""
+		}
+	}
+
+	if len(args) >= 0 {
+		err = meddler.QueryAll(db, &feed, fmt.Sprintf(userBuildQuery, stmt, since), args...)
+	}
+
+	return feed, err
+}
+
 func (db *datastore) GetUserFeedLatest(listof []*model.RepoLite) ([]*model.Feed, error) {
 	var (
 		args []interface{}
@@ -59,6 +86,7 @@ func (db *datastore) GetUserFeedLatest(listof []*model.RepoLite) ([]*model.Feed,
 	default:
 		stmt, args = toList(listof)
 	}
+
 	if len(args) > 0 {
 		err = meddler.QueryAll(db, &feed, fmt.Sprintf(userFeedLatest, stmt), args...)
 	}
@@ -170,4 +198,34 @@ FROM repos LEFT OUTER JOIN builds ON build_id = (
 	LIMIT 1
 )
 WHERE repo_full_name IN (%s)
+`
+
+const userBuildQuery = `
+SELECT
+ repo_owner
+,repo_name
+,repo_full_name
+,build_number
+,build_event
+,build_status
+,build_created
+,build_started
+,build_finished
+,build_commit
+,build_branch
+,build_ref
+,build_refspec
+,build_remote
+,build_title
+,build_message
+,build_author
+,build_email
+,build_avatar
+FROM
+ repos r
+ ,builds b
+WHERE r.repo_id = b.build_repo_id
+ %s
+ AND b.build_finished > %v
+ORDER BY b.build_id DESC
 `

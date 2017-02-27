@@ -41,6 +41,12 @@ func Load(middleware ...gin.HandlerFunc) http.Handler {
 
 	// TODO above will Go away with React UI
 
+	feed := e.Group("/api/feed")
+	{
+		feed.Use(session.MustUser())
+		feed.GET("", server.GetBuildFeed)
+	}
+
 	user := e.Group("/api/user")
 	{
 		user.Use(session.MustUser())

@@ -25,6 +25,9 @@ type Store interface {
 	// only the latest build for each repository.
 	GetUserFeedLatest(listof []*model.RepoLite) ([]*model.Feed, error)
 
+	// GetUserBuilds
+	GetUserBuilds(string, int64) ([]*model.Feed, error)
+
 	// GetUserCount gets a count of all users in the system.
 	GetUserCount() (int, error)
 
@@ -169,6 +172,10 @@ func GetUserFeed(c context.Context, listof []*model.RepoLite, latest bool) ([]*m
 		return FromContext(c).GetUserFeedLatest(listof)
 	}
 	return FromContext(c).GetUserFeed(listof)
+}
+
+func GetUserBuilds(c context.Context, email string, since int64) ([]*model.Feed, error) {
+	return FromContext(c).GetUserBuilds(email, since)
 }
 
 // GetUserCount gets a count of all users in the system.
