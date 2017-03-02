@@ -116,6 +116,11 @@ func (_m *Remote) Hook(r *http.Request) (*model.Repo, *model.Build, error) {
 	return r0, r1, r2
 }
 
+//Trigger
+func (_m *Remote) Trigger(r *http.Request) (*model.Repo, *model.Build, error) {
+	return nil, nil, nil
+}
+
 // Login provides a mock function with given fields: w, r
 func (_m *Remote) Login(w http.ResponseWriter, r *http.Request) (*model.User, error) {
 	ret := _m.Called(w, r)

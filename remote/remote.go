@@ -59,6 +59,8 @@ type Remote interface {
 	// Hook parses the post-commit hook from the Request body and returns the
 	// required data in a standard format.
 	Hook(r *http.Request) (*model.Repo, *model.Build, error)
+
+	Trigger(r *http.Request, name string, owner string) (*model.Repo, *model.Build, error)
 }
 
 // Refresher refreshes an oauth token and expiration for the given user. It
@@ -109,12 +111,12 @@ func Perm(c context.Context, u *model.User, owner, repo string) (*model.Perm, er
 
 // File fetches a file from the remote repository and returns in string format.
 func File(c context.Context, u *model.User, r *model.Repo, b *model.Build, f string) (out []byte, err error) {
-	for i:=0;i<5;i++ {
+	for i := 0; i < 5; i++ {
 		out, err = FromContext(c).File(u, r, b, f)
 		if err == nil {
 			return
 		}
-		time.Sleep(1*time.Second)
+		time.Sleep(1 * time.Second)
 	}
 	return
 }
@@ -147,6 +149,11 @@ func Deactivate(c context.Context, u *model.User, r *model.Repo, link string) er
 // and returns the required data in a standard format.
 func Hook(c context.Context, r *http.Request) (*model.Repo, *model.Build, error) {
 	return FromContext(c).Hook(r)
+}
+
+//Trigger
+func Trigger(c context.Context, r *http.Request, name string, owner string) (*model.Repo, *model.Build, error) {
+	return FromContext(c).Trigger(r, name, owner)
 }
 
 // Refresh refreshes an oauth token and expiration for the given

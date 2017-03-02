@@ -136,6 +136,35 @@ func convertPushHook(hook *internal.PostHook, baseURL string) *model.Build {
 	return build
 }
 
+func convertTrigger(baseURL string, name string, owner string, t triggerBody) *model.Build {
+
+	//Ensuring the author label is not longer then 40 for the label of the commit author (default size in the db)
+	authorLabel := t.Author
+	if len(authorLabel) > 40 {
+		authorLabel = authorLabel[0:37] + "..."
+	}
+
+	build := &model.Build{
+		Commit:    t.Commit, // TODO check for index value
+		Branch:    t.Branch,
+		Message:   fmt.Sprintf("Manual Trigger by %v, Message => %v", t.Author, t.Message),
+		Avatar:    avatarLink(t.Author), //TODO CHANGE THIS
+		Author:    authorLabel,
+		Email:     t.Author,
+		Timestamp: time.Now().UTC().Unix(),
+		Ref:       "REF", // TODO check for index Values
+		Link:      fmt.Sprintf("%s/projects/%s/repos/%s/commits/%s", baseURL, owner, name, t.Commit),
+	}
+
+	if t.Event == "tag" || t.Event == "Tag" {
+		build.Event = model.EventTag
+	} else {
+		build.Event = model.EventPush
+	}
+
+	return build
+}
+
 // convertUser is a helper function used to convert a Bitbucket user account
 // structure to the Drone User structure.
 func convertUser(from *internal.User, token *oauth.AccessToken) *model.User {

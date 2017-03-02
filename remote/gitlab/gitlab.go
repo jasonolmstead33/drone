@@ -432,6 +432,10 @@ func (g *Gitlab) Hook(req *http.Request) (*model.Repo, *model.Build, error) {
 	}
 }
 
+func (g *Gitlab) Trigger(r *http.Request, name string, owner string) (*model.Repo, *model.Build, error) {
+	return nil, nil, nil
+}
+
 func mergeRequest(parsed *client.HookPayload, req *http.Request) (*model.Repo, *model.Build, error) {
 
 	repo := &model.Repo{}

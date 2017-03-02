@@ -3,10 +3,51 @@ package bitbucketserver
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	log "github.com/Sirupsen/logrus"
+
 	"github.com/drone/drone/model"
 	"github.com/drone/drone/remote/bitbucketserver/internal"
-	"net/http"
 )
+
+type triggerBody struct {
+	Branch  string
+	Event   string
+	Author  string
+	Commit  string
+	Message string
+}
+
+func (t *triggerBody) String() string {
+	return fmt.Sprintf("{\nBranch => %v\n Event => %v\n Author => %v \n Message => %v \n Commit => %v \n}",
+		t.Branch,
+		t.Event,
+		t.Author,
+		t.Message,
+		t.Commit)
+}
+
+func parseTrigger(r *http.Request, baseURL string, name string, owner string) (*model.Repo, *model.Build, error) {
+	decoder := json.NewDecoder(r.Body)
+	var t triggerBody
+	err := decoder.Decode(&t)
+	if err != nil {
+		log.Errorf("%v", err.Error())
+	}
+	defer r.Body.Close()
+
+	build := convertTrigger(baseURL, name, owner, t)
+	repo := &model.Repo{
+		Name:     name,
+		Owner:    owner,
+		FullName: fmt.Sprintf("%s/%s", name, owner),
+		Branch:   t.Branch,
+		Kind:     model.RepoGit,
+	}
+
+	return repo, build, nil
+}
 
 // parseHook parses a Bitbucket hook from an http.Request request and returns
 // Repo and Build detail. TODO: find a way to support PR hooks

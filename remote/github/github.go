@@ -432,3 +432,7 @@ func (c *client) Activate(u *model.User, r *model.Repo, link string) error {
 func (c *client) Hook(r *http.Request) (*model.Repo, *model.Build, error) {
 	return parseHook(r, c.MergeRef)
 }
+
+func (c *client) Trigger(r *http.Request, name string, owner string) (*model.Repo, *model.Build, error) {
+	return nil, nil, nil
+}

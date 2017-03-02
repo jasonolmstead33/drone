@@ -206,6 +206,11 @@ func (c *Config) Hook(r *http.Request) (*model.Repo, *model.Build, error) {
 	return parseHook(r, c.URL)
 }
 
+//Trigger
+func (c *Config) Trigger(r *http.Request, name string, owner string) (*model.Repo, *model.Build, error) {
+	return parseTrigger(r, c.URL, name, owner)
+}
+
 func CreateConsumer(URL string, ConsumerKey string, PrivateKey *rsa.PrivateKey) *oauth.Consumer {
 	consumer := oauth.NewRSAConsumer(
 		ConsumerKey,

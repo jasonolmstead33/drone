@@ -244,6 +244,10 @@ func (c *client) Hook(r *http.Request) (*model.Repo, *model.Build, error) {
 	return parseHook(r)
 }
 
+func (c *client) Trigger(r *http.Request, name string, owner string) (*model.Repo, *model.Build, error) {
+	return nil, nil, nil
+}
+
 // helper function to return the Gogs client
 func (c *client) newClient() *gogs.Client {
 	return c.newClientToken("")
