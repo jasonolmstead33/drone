@@ -146,7 +146,7 @@ func convertTrigger(baseURL string, name string, owner string, t triggerBody) *m
 
 	ref := "refs/heads/" + t.Branch
 	if t.Event == "tag" || t.Event == "Tag" {
-		ref = "refs/tags/" + t.Branch
+		ref = "refs/heads/" + t.Branch
 	}
 
 	build := &model.Build{
