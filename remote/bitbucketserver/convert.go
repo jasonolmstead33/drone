@@ -144,6 +144,11 @@ func convertTrigger(baseURL string, name string, owner string, t triggerBody) *m
 		authorLabel = authorLabel[0:37] + "..."
 	}
 
+	ref := "refs/heads/" + t.Branch
+	if t.Event == "tag" || t.Event == "Tag" {
+		ref = "refs/tags/" + t.Branch
+	}
+
 	build := &model.Build{
 		Commit:    t.Commit, // TODO check for index value
 		Branch:    t.Branch,
@@ -152,7 +157,7 @@ func convertTrigger(baseURL string, name string, owner string, t triggerBody) *m
 		Author:    authorLabel,
 		Email:     t.Author,
 		Timestamp: time.Now().UTC().Unix(),
-		Ref:       "REF", // TODO check for index Values
+		Ref:       ref,
 		Link:      fmt.Sprintf("%s/projects/%s/repos/%s/commits/%s", baseURL, owner, name, t.Commit),
 	}
 
