@@ -93,6 +93,16 @@ func Load(middleware ...gin.HandlerFunc) http.Handler {
 	{
 		repos.POST("", server.PostRepo)
 
+		trigger := repos.Group("")
+		{
+			trigger.Use(session.SetRepo())
+			trigger.Use(session.SetPerm())
+			trigger.Use(session.MustUser())
+			trigger.Use(session.MustPull)
+
+			trigger.POST("/trigger", server.Trigger)
+		}
+
 		repo := repos.Group("")
 		{
 			repo.Use(session.SetRepo())

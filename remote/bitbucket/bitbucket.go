@@ -241,6 +241,10 @@ func (c *config) Hook(r *http.Request) (*model.Repo, *model.Build, error) {
 	return parseHook(r)
 }
 
+func (c *config) Trigger(r *http.Request, name string, owner string) (*model.Repo, *model.Build, error) {
+	return nil, nil, nil
+}
+
 // helper function to return the bitbucket oauth2 client
 func (c *config) newClient(u *model.User) *internal.Client {
 	return c.newClientToken(u.Token, u.Secret)
